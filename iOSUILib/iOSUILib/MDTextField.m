@@ -105,7 +105,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [self.placeholder drawInRect:rect
                         withFont:self.font
-                   lineBreakMode:NSLineBreakByTruncatingTail
+                   lineBreakMode:NSLineBreakByWordWrapping
                        alignment:self.textAlignment];
 #pragma clang diagnostic pop
   }
