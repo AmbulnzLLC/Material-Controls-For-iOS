@@ -1058,7 +1058,9 @@
       if (!_fullWidth) {
         [_dividerHolder setState:MDTextFieldViewStateNormal];
       }
-      [_labelView setTextColor:_normalColor];
+      if ([_labelView attributedText] == nil) {
+        [_labelView setTextColor:_normalColor];
+      }
       [self updateTextColor:_textColor];
       break;
     case MDTextFieldViewStateHighlighted:
