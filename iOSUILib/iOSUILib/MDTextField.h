@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+#import "AutoResizeTextView.h"
 
 typedef NS_ENUM(NSInteger, MDTextFieldViewState) {
   MDTextFieldViewStateNormal,
