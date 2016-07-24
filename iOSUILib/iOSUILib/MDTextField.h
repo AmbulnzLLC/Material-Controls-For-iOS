@@ -110,7 +110,8 @@ IB_DESIGNABLE
 @property(nullable, nonatomic, weak) id<MDTextFieldDelegate> delegate;
 @property(nonatomic, nullable, readwrite, strong) UIView *inputAccessoryView;
 
-@property(nullable, nonatomic) UILabel *labelView;
+@property(nonnull, nonatomic) UILabel *labelView;
+@property(nonnull, nonatomic) AutoResizeTextView *textView;
 
 
 - (float)requiredHeightWithNumberOfTextLines:(NSUInteger)numberOfLines;

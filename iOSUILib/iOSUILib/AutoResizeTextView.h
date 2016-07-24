@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) NSInteger maxVisibleLines;
 @property(nonatomic) float maxHeight;
 @property(nullable, nonatomic) UIColor *placeholderColor;
+@property(nonnull, nonatomic) UILabel *placeholderLabel;
+
 @property(nonatomic, weak) MDTextField *holder;
 
 @end

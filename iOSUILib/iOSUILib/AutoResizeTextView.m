@@ -24,7 +24,6 @@
 #import "MDTextField.h"
 
 @implementation AutoResizeTextView {
-  UILabel *placeholderLabel;
   int numLines;
   BOOL settingText;
 }
@@ -33,9 +32,9 @@
   self = [super init];
   if (self) {
 
-    placeholderLabel = [[UILabel alloc] init];
-    [placeholderLabel setTextColor:[UIColor grayColor]];
-    [self addSubview:placeholderLabel];
+    _placeholderLabel = [[UILabel alloc] init];
+    [_placeholderLabel setTextColor:[UIColor grayColor]];
+    [self addSubview:_placeholderLabel];
 
     self.textContainerInset = UIEdgeInsetsZero;
     self.textContainer.lineFragmentPadding = 0;
@@ -69,22 +68,22 @@
 
 - (void)setPlaceholder:(NSString *)placeholder {
   _placeholder = placeholder;
-  [placeholderLabel setText:_placeholder];
+  [_placeholderLabel setText:_placeholder];
 }
 
 - (void)setFont:(UIFont *)font {
   [super setFont:font];
-  [placeholderLabel setFont:font];
+  [_placeholderLabel setFont:font];
   [self calculateTextViewHeight];
   UIEdgeInsets textContainerInsets = self.textContainerInset;
-  [placeholderLabel
+  [_placeholderLabel
       setFrame:CGRectMake(0, textContainerInsets.top, self.frame.size.width,
-                          placeholderLabel.font.lineHeight)];
+                          _placeholderLabel.font.lineHeight)];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
   _placeholderColor = placeholderColor;
-  [placeholderLabel setTextColor:_placeholderColor];
+  [_placeholderLabel setTextColor:_placeholderColor];
 }
 
 - (void)setMinVisibleLines:(NSInteger)minVisibleLines {
@@ -108,17 +107,17 @@
 
 - (void)layoutSubviews {
   [super layoutSubviews];
-  [placeholderLabel
+  [_placeholderLabel
       setFrame:CGRectMake(0, self.textContainerInset.top, self.frame.size.width,
-                          placeholderLabel.font.lineHeight)];
+                          _placeholderLabel.font.lineHeight)];
 }
 
 - (void)textViewDidChangeWithNotification:(NSNotification *)notification {
   if (notification.object == self && !settingText) {
     if (self.text.length >= 1) {
-      placeholderLabel.hidden = YES;
+      _placeholderLabel.hidden = YES;
     } else {
-      placeholderLabel.hidden = NO;
+      _placeholderLabel.hidden = NO;
     }
     [self calculateTextViewHeight];
   }
@@ -129,9 +128,9 @@
   [super setText:text];
   settingText = NO;
   if (self.text.length >= 1) {
-    placeholderLabel.hidden = YES;
+    _placeholderLabel.hidden = YES;
   } else {
-    placeholderLabel.hidden = NO;
+    _placeholderLabel.hidden = NO;
   }
   [self calculateTextViewHeight];
 }

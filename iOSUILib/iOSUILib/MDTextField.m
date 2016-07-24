@@ -47,7 +47,6 @@
 @end
 
 @interface MDTextField ()
-@property(nonatomic) AutoResizeTextView *textView;
 @property(nonatomic) CustomTextField *textField;
 
 @property(nonatomic) MDTextFieldViewState viewState;
