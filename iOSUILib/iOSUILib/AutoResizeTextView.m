@@ -23,10 +23,18 @@
 #import "AutoResizeTextView.h"
 #import "MDTextField.h"
 
+
+@interface AutoResizeTextView ()
+@property(nonatomic) NSMutableArray<NSLayoutConstraint*> *placeholderConstraints;
+@property(nonatomic) UIEdgeInsets lastComputedLayoutInsets;
+@end
+
+
 @implementation AutoResizeTextView {
-  int numLines;
-  BOOL settingText;
+    int numLines;
+    BOOL settingText;
 }
+
 
 - (instancetype)init {
   self = [super init];
@@ -45,6 +53,7 @@
                name:UITextViewTextDidChangeNotification
              object:self];
     numLines = -1;
+    [self computePlaceholderConstraints];
   }
   return self;
 }
@@ -75,10 +84,47 @@
   [super setFont:font];
   [_placeholderLabel setFont:font];
   [self calculateTextViewHeight];
-  UIEdgeInsets textContainerInsets = self.textContainerInset;
-  [_placeholderLabel
-      setFrame:CGRectMake(0, textContainerInsets.top, self.frame.size.width,
-                          _placeholderLabel.font.lineHeight)];
+}
+
+- (void)computePlaceholderConstraints {
+
+    UIEdgeInsets insets = self.textContainerInset;
+
+    if (self.placeholderConstraints != nil) {
+        if (UIEdgeInsetsEqualToEdgeInsets(self.lastComputedLayoutInsets, insets)) {
+            return;
+        }
+        [self removeConstraints:self.placeholderConstraints];
+    }
+    
+    
+    
+    NSDictionary<NSString*,id> * views = @{ @"placeholderLabel": self.placeholderLabel };
+    NSDictionary<NSString*,id> * metrics = @{ @"top" : @(insets.top),
+                                              @"left" : @(insets.left),
+                                              @"bottom" : @(insets.bottom),
+                                              @"right" : @(insets.right) };
+    
+    NSArray * constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-left-[placeholderLabel]-right-|"
+                                                                    options:0 metrics:metrics views:views];
+    
+    self.placeholderConstraints = [constraints mutableCopy];
+    
+    NSArray * constraints2 = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-top-[placeholderLabel]-bottom-|"
+                                                                     options:0 metrics:metrics views:views];
+    
+    [self.placeholderConstraints addObjectsFromArray:constraints2];
+    [self addConstraints:self.placeholderConstraints];
+    
+    self.lastComputedLayoutInsets = insets;
+    
+    [self setNeedsLayout];
+
+}
+
+- (void)setTextContainerInset:(UIEdgeInsets)textContainerInset {
+    [super setTextContainerInset:textContainerInset];
+    [self computePlaceholderConstraints];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
