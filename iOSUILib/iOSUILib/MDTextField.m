@@ -1008,19 +1008,28 @@
 - (void)calculateLabelFrame {
   if (_labelView.hidden)
     return;
-  if (!_floatingLabel || [self getTextLength] > 0 ||
-      [self getInputView].isFirstResponder) {
-    CGRect frame = _labelPlaceHolder.frame;
-    [_labelView setFrame:CGRectMake(frame.origin.x, frame.origin.y,
-                                    _placeHolder.frame.size.width,
-                                    _labelsFont.lineHeight)];
-    [_labelView setFont:_labelsFont];
+  if (!_floatingLabel || [self getTextLength] > 0 || [self getInputView].isFirstResponder) {
+      CGRect frame = _labelPlaceHolder.frame;
+      CGRect newFrame = CGRectMake(frame.origin.x, frame.origin.y,
+                                   _placeHolder.frame.size.width,
+                                   _labelsFont.lineHeight);
+      if (!CGRectEqualToRect(_labelView.frame, newFrame)) {
+          [_labelView setFrame:newFrame];
+      }
+      if (![_labelView.font isEqual:_labelsFont]) {
+          [_labelView setFont:_labelsFont];
+      }
   } else {
-    CGRect frame = [self getInputView].frame;
-    [_labelView setFrame:CGRectMake(frame.origin.x, frame.origin.y,
-                                    _placeHolder.frame.size.width,
-                                    _inputTextFont.lineHeight)];
-    [_labelView setFont:_inputTextFont];
+      CGRect frame = [self getInputView].frame;
+      CGRect newFrame = CGRectMake(frame.origin.x, frame.origin.y,
+                                   _placeHolder.frame.size.width,
+                                   _inputTextFont.lineHeight);
+      if (!CGRectEqualToRect(_labelView.frame, newFrame)) {
+          [_labelView setFrame:newFrame];
+      }
+      if (![_labelView.font isEqual:_inputTextFont]) {
+          [_labelView setFont:_inputTextFont];
+      }
   }
 }
 
