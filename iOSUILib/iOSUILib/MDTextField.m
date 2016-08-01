@@ -998,9 +998,16 @@
   }
 }
 
+- (void)layoutIfNeeded {
+    [super layoutIfNeeded];
+}
+
+- (void)setNeedsLayout {
+    [super setNeedsLayout];
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
-  [_placeHolder layoutSubviews];
   [self calculateLabelFrame];
   [self updateMaxTextViewSize];
 }
