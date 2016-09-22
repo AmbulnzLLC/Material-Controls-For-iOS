@@ -324,7 +324,7 @@
 @end
 
 #pragma mark MDTextField
-@interface MDTextField () <UITextFieldDelegate, UITextViewDelegate>
+@interface MDTextField () <CAAnimationDelegate, UITextFieldDelegate, UITextViewDelegate>
 @property UILabel *labelView;
 @property UIView *labelPlaceHolder;
 @property UILabel *errorView;

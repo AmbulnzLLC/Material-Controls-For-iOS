@@ -32,6 +32,7 @@
 @implementation MDTableViewCell
 
 - (void)awakeFromNib {
+  [super awakeFromNib];
   // Initialization code
   [self initLayer];
 }

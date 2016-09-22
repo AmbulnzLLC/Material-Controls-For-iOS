@@ -33,7 +33,7 @@
 #define kMDElevationOffset 6
 #define kMDClearEffectDuration 0.3f;
 
-@interface MDRippleLayer () <MDTouchGestureRecognizerDelegate,
+@interface MDRippleLayer () <MDTouchGestureRecognizerDelegate, CAAnimationDelegate,
                              UIGestureRecognizerDelegate>
 
 @property CALayer *superLayer;
@@ -132,8 +132,8 @@
   } else if (flag) {
     if (_userIsHolding) {
       _effectIsRunning = false;
-      if (self.delegate) {
-        [self.delegate mdLayer:self didFinishEffect:anim.duration];
+      if ([self.layerDelegate respondsToSelector:@selector(mdLayer:didFinishEffect:)]) {
+        [self.layerDelegate mdLayer:self didFinishEffect:anim.duration];
       }
     } else {
       [self clearEffects];

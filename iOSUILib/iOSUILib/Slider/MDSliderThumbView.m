@@ -31,6 +31,10 @@
 #define kMDHideBubbleAnimationKey @"hideBubble"
 #define kMDShowBubbleAnimationKey @"showBubble"
 
+@interface MDSliderThumbView () <CAAnimationDelegate>
+
+@end
+
 @implementation MDSliderThumbView {
   NSLayoutConstraint *nodeWidthConstraint;
   NSDictionary *viewsDictionary;

@@ -208,7 +208,7 @@ CAMediaTimingFunction *timmingFunction;
                                                    withValueScale:anArc]];
       startValue += anArc * (kMDMaxStrokeLength + kMDMinStrokeLength);
       startTime += animationDuration * 2;
-    } while (!fmodf(floorf(startValue * 1000), 1000) == 0);
+    } while (fmodf(floorf(startValue * 1000), 1000) != 0);
 
     animationGroups = [CAAnimationGroup animation];
     animationGroups.duration = startTime;

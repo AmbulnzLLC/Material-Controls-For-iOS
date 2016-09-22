@@ -23,9 +23,15 @@
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
+@protocol MDLayerDelegate;
+
 NS_ASSUME_NONNULL_BEGIN
 @interface MDRippleLayer : CALayer
 
+/*!
+ * @brief layer delegate
+ */
+@property(nonatomic) id<MDLayerDelegate> layerDelegate;
 /*!
  * @brief enable ripple effect or not
  */
