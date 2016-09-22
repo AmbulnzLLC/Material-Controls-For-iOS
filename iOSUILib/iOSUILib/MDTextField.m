@@ -47,7 +47,6 @@
 @end
 
 @interface MDTextField ()
-@property(nonatomic) AutoResizeTextView *textView;
 @property(nonatomic) CustomTextField *textField;
 
 @property(nonatomic) MDTextFieldViewState viewState;
@@ -105,7 +104,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [self.placeholder drawInRect:rect
                         withFont:self.font
-                   lineBreakMode:NSLineBreakByTruncatingTail
+                   lineBreakMode:NSLineBreakByWordWrapping
                        alignment:self.textAlignment];
 #pragma clang diagnostic pop
   }
@@ -324,7 +323,7 @@
 @end
 
 #pragma mark MDTextField
-@interface MDTextField () <CAAnimationDelegate, UITextFieldDelegate, UITextViewDelegate>
+@interface MDTextField () <UITextFieldDelegate, UITextViewDelegate>
 @property UILabel *labelView;
 @property UIView *labelPlaceHolder;
 @property UILabel *errorView;
@@ -1000,9 +999,16 @@
   }
 }
 
+- (void)layoutIfNeeded {
+    [super layoutIfNeeded];
+}
+
+- (void)setNeedsLayout {
+    [super setNeedsLayout];
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
-  [_placeHolder layoutSubviews];
   [self calculateLabelFrame];
   [self updateMaxTextViewSize];
 }
@@ -1010,19 +1016,28 @@
 - (void)calculateLabelFrame {
   if (_labelView.hidden)
     return;
-  if (!_floatingLabel || [self getTextLength] > 0 ||
-      [self getInputView].isFirstResponder) {
-    CGRect frame = _labelPlaceHolder.frame;
-    [_labelView setFrame:CGRectMake(frame.origin.x, frame.origin.y,
-                                    _placeHolder.frame.size.width,
-                                    _labelsFont.lineHeight)];
-    [_labelView setFont:_labelsFont];
+  if (!_floatingLabel || [self getTextLength] > 0 || [self getInputView].isFirstResponder) {
+      CGRect frame = _labelPlaceHolder.frame;
+      CGRect newFrame = CGRectMake(frame.origin.x, frame.origin.y,
+                                   _placeHolder.frame.size.width,
+                                   _labelsFont.lineHeight);
+      if (!CGRectEqualToRect(_labelView.frame, newFrame)) {
+          [_labelView setFrame:newFrame];
+      }
+      if (![_labelView.font isEqual:_labelsFont]) {
+          [_labelView setFont:_labelsFont];
+      }
   } else {
-    CGRect frame = [self getInputView].frame;
-    [_labelView setFrame:CGRectMake(frame.origin.x, frame.origin.y,
-                                    _placeHolder.frame.size.width,
-                                    _inputTextFont.lineHeight)];
-    [_labelView setFont:_inputTextFont];
+      CGRect frame = [self getInputView].frame;
+      CGRect newFrame = CGRectMake(frame.origin.x, frame.origin.y,
+                                   _placeHolder.frame.size.width,
+                                   _inputTextFont.lineHeight);
+      if (!CGRectEqualToRect(_labelView.frame, newFrame)) {
+          [_labelView setFrame:newFrame];
+      }
+      if (![_labelView.font isEqual:_inputTextFont]) {
+          [_labelView setFont:_inputTextFont];
+      }
   }
 }
 
@@ -1060,7 +1075,9 @@
       if (!_fullWidth) {
         [_dividerHolder setState:MDTextFieldViewStateNormal];
       }
-      [_labelView setTextColor:_normalColor];
+      if ([_labelView attributedText] == nil) {
+        [_labelView setTextColor:_normalColor];
+      }
       [self updateTextColor:_textColor];
       break;
     case MDTextFieldViewStateHighlighted:

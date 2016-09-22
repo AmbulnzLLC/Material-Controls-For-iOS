@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+#import "AutoResizeTextView.h"
 
 typedef NS_ENUM(NSInteger, MDTextFieldViewState) {
   MDTextFieldViewStateNormal,
@@ -109,6 +110,10 @@ IB_DESIGNABLE
 
 @property(nonatomic, nullable, weak) id<MDTextFieldDelegate> delegate;
 @property(nonatomic, nullable, readwrite, strong) UIView *inputAccessoryView;
+
+@property(nonnull, nonatomic) UILabel *labelView;
+@property(nonnull, nonatomic) AutoResizeTextView *textView;
+
 
 - (float)requiredHeightWithNumberOfTextLines:(NSUInteger)numberOfLines;
 

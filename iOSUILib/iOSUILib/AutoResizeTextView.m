@@ -23,19 +23,28 @@
 #import "AutoResizeTextView.h"
 #import "MDTextField.h"
 
+
+@interface AutoResizeTextView ()
+@property(nonatomic) NSMutableArray<NSLayoutConstraint*> *placeholderConstraints;
+@property(nonatomic) UIEdgeInsets lastComputedLayoutInsets;
+@property(nonatomic) CGFloat lastComputedWidth;
+@end
+
+
 @implementation AutoResizeTextView {
-  UILabel *placeholderLabel;
-  int numLines;
-  BOOL settingText;
+    int numLines;
+    BOOL settingText;
 }
+
 
 - (instancetype)init {
   self = [super init];
   if (self) {
 
-    placeholderLabel = [[UILabel alloc] init];
-    [placeholderLabel setTextColor:[UIColor grayColor]];
-    [self addSubview:placeholderLabel];
+    _placeholderLabel = [[UILabel alloc] init];
+    [_placeholderLabel setTextColor:[UIColor grayColor]];
+      [_placeholderLabel setTranslatesAutoresizingMaskIntoConstraints:false];
+    [self addSubview:_placeholderLabel];
 
     self.textContainerInset = UIEdgeInsetsZero;
     self.textContainer.lineFragmentPadding = 0;
@@ -46,6 +55,7 @@
                name:UITextViewTextDidChangeNotification
              object:self];
     numLines = -1;
+    [self computePlaceholderConstraints];
   }
   return self;
 }
@@ -69,22 +79,29 @@
 
 - (void)setPlaceholder:(NSString *)placeholder {
   _placeholder = placeholder;
-  [placeholderLabel setText:_placeholder];
+  [_placeholderLabel setText:_placeholder];
 }
 
 - (void)setFont:(UIFont *)font {
   [super setFont:font];
-  [placeholderLabel setFont:font];
+  [_placeholderLabel setFont:font];
   [self calculateTextViewHeight];
-  UIEdgeInsets textContainerInsets = self.textContainerInset;
-  [placeholderLabel
-      setFrame:CGRectMake(0, textContainerInsets.top, self.frame.size.width,
-                          placeholderLabel.font.lineHeight)];
+}
+
+- (void)setFrame:(CGRect)frame {
+    [super setFrame:frame];
+    [self computePlaceholderConstraints];
+}
+
+
+- (void)setTextContainerInset:(UIEdgeInsets)textContainerInset {
+    [super setTextContainerInset:textContainerInset];
+    [self computePlaceholderConstraints];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
   _placeholderColor = placeholderColor;
-  [placeholderLabel setTextColor:_placeholderColor];
+  [_placeholderLabel setTextColor:_placeholderColor];
 }
 
 - (void)setMinVisibleLines:(NSInteger)minVisibleLines {
@@ -107,18 +124,17 @@
 #pragma mark private methods
 
 - (void)layoutSubviews {
+    [self computePlaceholderConstraints];
+
   [super layoutSubviews];
-  [placeholderLabel
-      setFrame:CGRectMake(0, self.textContainerInset.top, self.frame.size.width,
-                          placeholderLabel.font.lineHeight)];
 }
 
 - (void)textViewDidChangeWithNotification:(NSNotification *)notification {
   if (notification.object == self && !settingText) {
     if (self.text.length >= 1) {
-      placeholderLabel.hidden = YES;
+      _placeholderLabel.hidden = YES;
     } else {
-      placeholderLabel.hidden = NO;
+      _placeholderLabel.hidden = NO;
     }
     [self calculateTextViewHeight];
   }
@@ -129,53 +145,79 @@
   [super setText:text];
   settingText = NO;
   if (self.text.length >= 1) {
-    placeholderLabel.hidden = YES;
+    _placeholderLabel.hidden = YES;
   } else {
-    placeholderLabel.hidden = NO;
+    _placeholderLabel.hidden = NO;
   }
   [self calculateTextViewHeight];
 }
 
-- (CGFloat)intrinsicContentHeight {
-  if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1) {
+- (CGFloat)computeMaxContentWidth {
     CGRect frame = self.bounds;
     UIEdgeInsets textContainerInsets = self.textContainerInset;
     UIEdgeInsets contentInsets = self.contentInset;
-
+    
     CGFloat leftRightPadding = textContainerInsets.left +
-                               textContainerInsets.right +
-                               self.textContainer.lineFragmentPadding * 2 +
-                               contentInsets.left + contentInsets.right;
-    CGFloat topBottomPadding = textContainerInsets.top +
-                               textContainerInsets.bottom + contentInsets.top +
-                               contentInsets.bottom;
-
+    textContainerInsets.right +
+    self.textContainer.lineFragmentPadding * 2 +
+    contentInsets.left + contentInsets.right;
+    
     frame.size.width -= leftRightPadding;
-    frame.size.height -= topBottomPadding;
-
-    NSString *textToMeasure = self.text;
-    if ([textToMeasure hasSuffix:@"\n"]) {
-      textToMeasure = [NSString stringWithFormat:@"%@-", self.text];
-    }
-    NSMutableParagraphStyle *paragraphStyle =
-        [[NSMutableParagraphStyle alloc] init];
-    [paragraphStyle setLineBreakMode:NSLineBreakByWordWrapping];
-    NSDictionary *attributes = @{
-      NSFontAttributeName : self.font,
-      NSParagraphStyleAttributeName : paragraphStyle
-    };
-    CGRect size = [textToMeasure
-        boundingRectWithSize:CGSizeMake(CGRectGetWidth(frame), MAXFLOAT)
-                     options:NSStringDrawingUsesLineFragmentOrigin
-                  attributes:attributes
-                     context:nil];
-
-    CGFloat measuredHeight = ceilf(CGRectGetHeight(size) + topBottomPadding);
-    return measuredHeight;
-  } else {
-    return self.contentSize.height;
-  }
+    
+    return CGRectGetWidth(frame);
 }
+
+- (CGSize)computeDesiredContentSize {
+    if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1) {
+        
+        CGRect frame = self.bounds;
+        UIEdgeInsets textContainerInsets = self.textContainerInset;
+        UIEdgeInsets contentInsets = self.contentInset;
+        
+        CGFloat leftRightPadding = textContainerInsets.left +
+        textContainerInsets.right +
+        self.textContainer.lineFragmentPadding * 2 +
+        contentInsets.left + contentInsets.right;
+        CGFloat topBottomPadding = textContainerInsets.top +
+        textContainerInsets.bottom + contentInsets.top +
+        contentInsets.bottom;
+        
+        frame.size.width -= leftRightPadding;
+        frame.size.height -= topBottomPadding;
+        
+        NSString *textToMeasure = self.text;
+        if ([textToMeasure hasSuffix:@"\n"]) {
+            textToMeasure = [NSString stringWithFormat:@"%@-", self.text];
+        }
+        NSMutableParagraphStyle *paragraphStyle =
+        [[NSMutableParagraphStyle alloc] init];
+        [paragraphStyle setLineBreakMode:NSLineBreakByWordWrapping];
+        UIFont * font = self.font;
+        if (font == nil) {
+            font = [UIFont systemFontOfSize:17]; // default UILabel font
+        }
+        NSDictionary *attributes = @{
+                                     NSFontAttributeName : font,
+                                     NSParagraphStyleAttributeName : paragraphStyle
+                                     };
+        CGRect size = [textToMeasure
+                       boundingRectWithSize:CGSizeMake(CGRectGetWidth(frame), MAXFLOAT)
+                       options:NSStringDrawingUsesLineFragmentOrigin
+                       attributes:attributes
+                       context:nil];
+        
+        CGFloat measuredHeight = ceilf(CGRectGetHeight(size) + topBottomPadding);
+        return CGSizeMake(frame.size.width,measuredHeight);
+    } else {
+        return self.contentSize;
+    }
+}
+
+
+- (CGFloat)intrinsicContentHeight {
+    CGSize size = [self computeDesiredContentSize];
+    return size.height;
+ }
 
 - (void)calculateTextViewHeight {
   CGFloat contentHeight = [self intrinsicContentHeight];
@@ -226,6 +268,56 @@
       _holder.textViewHeightConstraint.constant = visibleHeight;
     }
   }
+  [self computePlaceholderConstraints];
+}
+
+
+- (void)computePlaceholderConstraints {
+    if (self.placeholderLabel == nil) {
+        return;
+    }
+    
+    UIEdgeInsets insets = self.textContainerInset;
+    
+    CGSize size = [self computeDesiredContentSize];
+    
+    if (self.placeholderConstraints != nil) {
+        if (UIEdgeInsetsEqualToEdgeInsets(self.lastComputedLayoutInsets, insets) && self.lastComputedWidth == size.width) {
+            return;
+        }
+        [self removeConstraints:self.placeholderConstraints];
+    }
+    
+    
+    
+    NSDictionary<NSString*,id> * views = @{ @"placeholderLabel": self.placeholderLabel };
+    NSDictionary<NSString*,id> * metrics = @{ @"top" : @(insets.top),
+                                              @"left" : @(insets.left),
+                                              @"bottom" : @(insets.bottom),
+                                              @"right" : @(insets.right)};
+    
+    NSArray * constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-left-[placeholderLabel]-right-|"
+                                                                    options:0 metrics:metrics views:views];
+    
+    self.placeholderConstraints = [constraints mutableCopy];
+    
+    NSArray * constraints2 = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-top-[placeholderLabel]-bottom-|"
+                                                                     options:0 metrics:metrics views:views];
+    
+    [self.placeholderConstraints addObjectsFromArray:constraints2];
+    
+    if (size.width > 0) {
+        NSLayoutConstraint * widthConstraint = [NSLayoutConstraint constraintWithItem:self.placeholderLabel attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size.width];
+        [self.placeholderConstraints addObject:widthConstraint];
+    }
+    
+    [self addConstraints:self.placeholderConstraints];
+    
+    self.lastComputedLayoutInsets = insets;
+    self.lastComputedWidth = size.width;
+    
+    [self setNeedsLayout];
+    
 }
 
 - (void)scrollToCaret {
