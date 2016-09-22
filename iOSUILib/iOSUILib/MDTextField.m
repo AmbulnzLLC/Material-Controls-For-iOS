@@ -323,8 +323,7 @@
 @end
 
 #pragma mark MDTextField
-@interface MDTextField () <UITextFieldDelegate, UITextViewDelegate>
-@property UILabel *labelView;
+@interface MDTextField () <CAAnimationDelegate, UITextFieldDelegate, UITextViewDelegate>
 @property UIView *labelPlaceHolder;
 @property UILabel *errorView;
 @property UILabel *characterCountView;

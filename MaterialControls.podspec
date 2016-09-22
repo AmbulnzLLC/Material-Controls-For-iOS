@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.author           = { "FPT Software" => "mobility@fsoft.com.vn" }
   s.source           = { :git => "https://github.com/fpt-software/Material-Controls-For-iOS.git", :tag => "1.1.0" }
 
-  s.platform     = :ios, '7.0'
+  s.platform     = :ios, '8.0'
   s.requires_arc = true
 
   s.source_files = 'iOSUILib/iOSUILib/**/*'
